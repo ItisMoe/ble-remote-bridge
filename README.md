@@ -190,11 +190,11 @@ This is a **beta (0.9.0)**. What has been verified on the author's hardware (ESP
 | No crash/reboot loop with three devices (patched library) | ✅ verified |
 | Key presses forwarded to the TV | ✅ verified |
 | TV reconnects after the ESP32 restarts | ✅ verified |
-| Key presses arriving at the Chromecast | ⏳ not yet confirmed |
-| Remote reconnecting after it sleeps or after an ESP32 restart | ⏳ not yet confirmed |
-| Chromecast reconnecting after a restart; TV standby cycle | ⏳ not yet confirmed |
-| TCL-specific keys working on the TV with the default IDs | ⏳ not yet confirmed |
-| Input session and switch key (new in 0.9.0) | ⏳ built and compiled, awaiting a hardware test |
+| Key presses arriving at the Chromecast | ✅ verified |
+| Remote reconnecting after it sleeps or after an ESP32 restart | ✅ verified |
+| Chromecast reconnecting after a restart; TV standby cycle | ✅ verified |
+| TCL-specific keys working on the TV with the default IDs | ✅ verified |
+| Input session and switch key (new in 0.9.0) | ✅ verified |
 
 The full test checklist and how to report results is in [docs/testing.md](docs/testing.md). The bugs found along the way, with evidence, are in [docs/development-notes.md](docs/development-notes.md).
 
