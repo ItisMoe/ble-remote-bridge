@@ -1,0 +1,16 @@
+# Build output
+build/
+*.elf
+*.bin
+*.map
+*.hex
+
+# Python
+__pycache__/
+*.pyc
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

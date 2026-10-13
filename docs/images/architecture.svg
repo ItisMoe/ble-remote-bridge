@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1010 470" width="1010" height="470" role="img" aria-label="Architecture: remote to ESP32-C3 to TV and Chromecast">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3b4252"/></marker></defs>
+<rect width="1010" height="470" fill="#ffffff"/>
+<text x="30" y="40" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#1f2933">How the bridge sits between the remote and the screens</text>
+<rect x="30" y="130" width="230" height="150" rx="14" fill="#eef1f5" stroke="#b8c0cc" stroke-width="2"/>
+<text x="145.0" y="160" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2933">Bluetooth remote</text>
+<text x="145.0" y="184" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">TCL RC902V</text>
+<text x="145.0" y="202" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">sends key codes as</text>
+<text x="145.0" y="220" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">BLE HID reports</text>
+<text x="145.0" y="238" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">(Consumer Control, ID 3)</text>
+<rect x="375" y="90" width="270" height="230" rx="14" fill="#e6f4ec" stroke="#2e8b57" stroke-width="2"/>
+<text x="510.0" y="120" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2933">ESP32-C3 (the bridge)</text>
+<text x="510.0" y="144" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">towards the remote: BLE central</text>
+<text x="510.0" y="162" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">(HID host - looks like the TV)</text>
+<text x="510.0" y="180" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d"></text>
+<text x="510.0" y="198" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">mapping table: key  →  TV / Chromecast</text>
+<text x="510.0" y="216" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d"></text>
+<text x="510.0" y="234" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">towards the screens: BLE peripheral</text>
+<text x="510.0" y="252" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">(HID remote - looks like a keyboard)</text>
+<rect x="760" y="70" width="190" height="110" rx="14" fill="#fdf1e3" stroke="#b85c00" stroke-width="2"/>
+<text x="855.0" y="100" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2933">TCL TV</text>
+<text x="855.0" y="124" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">receives the keys</text>
+<text x="855.0" y="142" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">sent to it</text>
+<rect x="760" y="240" width="190" height="110" rx="14" fill="#e6eef8" stroke="#2b6cb0" stroke-width="2"/>
+<text x="855.0" y="270" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2933">Chromecast</text>
+<text x="855.0" y="294" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">receives the keys</text>
+<text x="855.0" y="312" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">sent to it</text>
+<line x1="260" y1="205" x2="375" y2="205" stroke="#3b4252" stroke-width="2.5" marker-end="url(#ah)"/>
+<text x="318" y="192" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933">BLE (paired)</text>
+<line x1="645" y1="150" x2="760" y2="125" stroke="#3b4252" stroke-width="2.5" marker-end="url(#ah)"/>
+<text x="703" y="120" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933">BLE</text>
+<line x1="645" y1="260" x2="760" y2="295" stroke="#3b4252" stroke-width="2.5" marker-end="url(#ah)"/>
+<text x="703" y="292" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933">BLE</text>
+<path d="M145 280 L145 400 L968 400 L968 125 L952 125" fill="none" stroke="#8a8f98" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#ah)"/>
+<text x="500" y="392" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" fill="#1f2933">Power: infrared, straight to the TV (the bridge is not involved)</text>
+<text x="500" y="428" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="12.5" fill="#52606d">All other keys travel over Bluetooth while the remote is paired to the bridge.</text>
+</svg>

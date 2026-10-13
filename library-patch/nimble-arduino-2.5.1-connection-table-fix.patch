@@ -1,0 +1,136 @@
+diff -urN a/src/NimBLE_BridgeFix.h b/src/NimBLE_BridgeFix.h
+--- a/src/NimBLE_BridgeFix.h	1970-01-01 00:00:00.000000000 +0000
++++ b/src/NimBLE_BridgeFix.h	2026-10-13 03:45:45.237495499 +0000
+@@ -0,0 +1,4 @@
++/* Marker: this copy of NimBLE-Arduino 2.5.1 carries the RC Bridge fix for the per-connection
++ * tables in nimble/nimble/host/src/ble_gap.c and ble_hs_hci_evt.c (connection handles larger
++ * than BLE_MAX_CONNECTIONS wrote past them and corrupted memory). */
++#define NIMBLE_BRIDGE_FIX 1
+diff -urN a/src/nimble/nimble/host/src/ble_gap.c b/src/nimble/nimble/host/src/ble_gap.c
+--- a/src/nimble/nimble/host/src/ble_gap.c	2026-10-13 03:45:45.058625220 +0000
++++ b/src/nimble/nimble/host/src/ble_gap.c	2026-10-13 03:45:45.235073816 +0000
+@@ -296,7 +296,15 @@
+ static uint16_t pawr_sync_handle;
+ #endif
+ 
+-int slave_conn[MYNEWT_VAL(BLE_MAX_CONNECTIONS) + 1];
++/* RC-BRIDGE FIX: these tables are indexed by the controller's connection handle, which can be
++ * larger than BLE_MAX_CONNECTIONS (the ESP32-C3 controller handed out handle 4 with 3 connections),
++ * which wrote past the tables and corrupted the connection-update pool and list. Size them for any
++ * handle and bounds-check every access. */
++#ifndef BLE_GAP_CONN_TBL_SZ
++#define BLE_GAP_CONN_TBL_SZ 32
++#define BLE_GAP_CONN_TBL_OK(h) ((unsigned)(h) < BLE_GAP_CONN_TBL_SZ)
++#endif
++int slave_conn[BLE_GAP_CONN_TBL_SZ];
+ static void ble_gap_update_entry_free(struct ble_gap_update_entry *entry);
+ 
+ #if NIMBLE_BLE_CONNECT
+@@ -323,10 +331,10 @@
+ static int ble_gap_disc_enable_tx(int enable, int filter_duplicates);
+ #endif
+ 
+-uint16_t g_max_tx_time[MYNEWT_VAL(BLE_MAX_CONNECTIONS) + 1];
+-uint16_t g_max_rx_time[MYNEWT_VAL(BLE_MAX_CONNECTIONS) + 1 ];
+-uint16_t g_max_tx_octets[MYNEWT_VAL(BLE_MAX_CONNECTIONS) + 1];
+-uint16_t g_max_rx_octets[MYNEWT_VAL(BLE_MAX_CONNECTIONS) + 1];
++uint16_t g_max_tx_time[BLE_GAP_CONN_TBL_SZ];
++uint16_t g_max_rx_time[BLE_GAP_CONN_TBL_SZ];
++uint16_t g_max_tx_octets[BLE_GAP_CONN_TBL_SZ];
++uint16_t g_max_rx_octets[BLE_GAP_CONN_TBL_SZ];
+ 
+ STATS_SECT_DECL(ble_gap_stats) ble_gap_stats;
+ STATS_NAME_START(ble_gap_stats)
+@@ -1601,7 +1609,9 @@
+ 
+     // Send disconnect event in slave role if connect was sent
+     if ((conn != NULL) &&  !(conn->bhc_flags & BLE_HS_CONN_F_MASTER)) {
+-        if (slave_conn[conn_handle]) {
++        if (!BLE_GAP_CONN_TBL_OK(conn_handle)) {
++            /* untracked handle: the connect event was sent, so send this one */
++        } else if (slave_conn[conn_handle]) {
+             slave_conn[conn_handle] = 0;
+ 	} else {
+ 	    send = 0;
+@@ -1610,10 +1620,12 @@
+ 
+     ble_hs_atomic_conn_delete(conn_handle);
+ 
+-    g_max_tx_time[conn_handle] = 0;
+-    g_max_rx_time[conn_handle] = 0;
+-    g_max_tx_octets[conn_handle] = 0;
+-    g_max_rx_octets[conn_handle] = 0;
++    if (BLE_GAP_CONN_TBL_OK(conn_handle)) {
++        g_max_tx_time[conn_handle] = 0;
++        g_max_rx_time[conn_handle] = 0;
++        g_max_tx_octets[conn_handle] = 0;
++        g_max_rx_octets[conn_handle] = 0;
++    }
+ 
+     event.type = BLE_GAP_EVENT_DISCONNECT;
+     event.disconnect.reason = reason;
+@@ -2842,7 +2854,7 @@
+ 
+ 	if (conn != NULL) {
+             ble_gap_event_connect_call(ev->conn_handle, ev->status);
+-            slave_conn[ev->conn_handle] = 1;
++            if (BLE_GAP_CONN_TBL_OK(ev->conn_handle)) slave_conn[ev->conn_handle] = 1;
+         }
+     }
+ #endif
+@@ -2927,10 +2939,12 @@
+     event.data_len_chg.max_tx_time = le16toh(ev->max_tx_time);
+     event.data_len_chg.max_rx_time = le16toh(ev->max_rx_time);
+ 
+-    g_max_tx_octets[conn_handle] = event.data_len_chg.max_tx_octets;
+-    g_max_rx_octets[conn_handle] = event.data_len_chg.max_rx_octets;
+-    g_max_tx_time[conn_handle] = event.data_len_chg.max_tx_time;
+-    g_max_rx_time[conn_handle] = event.data_len_chg.max_rx_time;
++    if (BLE_GAP_CONN_TBL_OK(conn_handle)) {
++        g_max_tx_octets[conn_handle] = event.data_len_chg.max_tx_octets;
++        g_max_rx_octets[conn_handle] = event.data_len_chg.max_rx_octets;
++        g_max_tx_time[conn_handle] = event.data_len_chg.max_tx_time;
++        g_max_rx_time[conn_handle] = event.data_len_chg.max_rx_time;
++    }
+ 
+     ble_gap_event_listener_call(&event);
+     ble_gap_call_conn_event_cb(&event, conn_handle);
+@@ -8026,7 +8040,8 @@
+      * If yes, then just return event to host indicating success
+      * since controller will not send any event in this scenario
+      */
+-    if (g_max_tx_time[conn_handle] == tx_time && g_max_tx_octets[conn_handle] == tx_octets) {
++    if (BLE_GAP_CONN_TBL_OK(conn_handle) &&
++        g_max_tx_time[conn_handle] == tx_time && g_max_tx_octets[conn_handle] == tx_octets) {
+ 
+         struct ble_gap_event event;
+ 
+diff -urN a/src/nimble/nimble/host/src/ble_hs_hci_evt.c b/src/nimble/nimble/host/src/ble_hs_hci_evt.c
+--- a/src/nimble/nimble/host/src/ble_hs_hci_evt.c	2026-10-13 03:45:45.057995517 +0000
++++ b/src/nimble/nimble/host/src/ble_hs_hci_evt.c	2026-10-13 03:45:45.234963040 +0000
+@@ -37,7 +37,15 @@
+ 
+ extern int ble_gap_master_connect_reattempt(uint16_t conn_handle);
+ extern int ble_gap_slave_adv_reattempt(void);
+-extern int slave_conn[MYNEWT_VAL(BLE_MAX_CONNECTIONS) + 1];
++/* RC-BRIDGE FIX: these tables are indexed by the controller's connection handle, which can be
++ * larger than BLE_MAX_CONNECTIONS (the ESP32-C3 controller handed out handle 4 with 3 connections),
++ * which wrote past the tables and corrupted the connection-update pool and list. Size them for any
++ * handle and bounds-check every access. */
++#ifndef BLE_GAP_CONN_TBL_SZ
++#define BLE_GAP_CONN_TBL_SZ 32
++#define BLE_GAP_CONN_TBL_OK(h) ((unsigned)(h) < BLE_GAP_CONN_TBL_SZ)
++#endif
++extern int slave_conn[BLE_GAP_CONN_TBL_SZ];
+ #endif
+ 
+ #if MYNEWT_VAL(BLE_QUEUE_CONG_CHECK)
+@@ -287,7 +295,7 @@
+ 	}
+ 	else if (!(conn->bhc_flags & BLE_HS_CONN_F_MASTER) && \
+ 		((ev->reason == BLE_ERR_CONN_ESTABLISHMENT) || \
+-		(!slave_conn[ev->conn_handle] && ev->reason == BLE_ERR_CONN_SPVN_TMO))) { //slave
++		(BLE_GAP_CONN_TBL_OK(ev->conn_handle) && !slave_conn[ev->conn_handle] && ev->reason == BLE_ERR_CONN_SPVN_TMO))) { //slave
+ 
+ 	    BLE_HS_LOG(INFO, "Reattempt advertising; reason: 0x%x, status = %x",
+                              ev->reason, ev->status);
